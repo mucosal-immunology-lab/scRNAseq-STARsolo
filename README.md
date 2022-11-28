@@ -8,6 +8,9 @@ Here we will describe the process of downloading publicly available scRNAseq dat
   - [Table of contents](#table-of-contents)
   - [Installation of STAR](#installation-of-star)
     - [Download STAR](#download-star)
+      - [Download the latest release and decompress it](#download-the-latest-release-and-decompress-it)
+      - [Compile the tool with Linux](#compile-the-tool-with-linux)
+      - [Add the tool to the PATH variable](#add-the-tool-to-the-path-variable)
     - [Download your genome](#download-your-genome)
     - [Download scRNAseq whitespace files](#download-scrnaseq-whitespace-files)
       - [BD Rhapsody whitespace files](#bd-rhapsody-whitespace-files)
@@ -29,6 +32,40 @@ Download and compile the latest version of [STAR](https://github.com/alexdobin/S
 
 You can find the STAR manual [here](https://raw.githubusercontent.com/alexdobin/STAR/master/doc/STARmanual.pdf).
 
+#### Download the latest release and decompress it
+
+It is recommended that you download and install STAR on the project directory, in a dedicated tools folder or similar. The example below is given for version `2.7.10b`.
+
+```bash
+# Get latest STAR source from releases
+wget https://github.com/alexdobin/STAR/archive/2.7.10b.tar.gz
+tar -xzf 2.7.10b.tar.gz
+```
+
+#### Compile the tool with Linux
+
+```bash
+# Compile
+cd STAR-2.7.10b/source
+make STAR
+```
+
+#### Add the tool to the PATH variable
+
+```bash
+# Add a line to your .bashrc file
+echo 'export PATH="$PATH:{path_to_toolsDB}/STAR-2.7.10b/source"' >> ~/.bashrc
+
+# Export the PATH variable for this session
+export PATH="$PATH:{path_to_toolsDB}/STAR-2.7.10b/source"
+```
+
+Ensure that you have added the tool to your `PATH` with the following command, which should return the designated directory. If not, you have not added the location to your `PATH` correctly.
+
+```bash
+which STAR
+```
+
 ### Download your genome
 
 Download the relevant species genome from GENCODE (recommended &ndash; [https://www.gencodegenes.org/](https://www.gencodegenes.org/)) or ENSEMBL (latest release &ndash; [http://ftp.ensembl.org/pub/release-108/](http://ftp.ensembl.org/pub/release-108/)).
@@ -43,6 +80,9 @@ wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_42/gencod
 
 # Download the FASTA file
 wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_42/GRCh38.p13.genome.fa.gz
+
+# Decompress everything
+gunzip *
 ```
 
 ### Download scRNAseq whitespace files
@@ -78,22 +118,22 @@ The basic options to generate your genome index are as follows:
 --sjdbOverhang ReadLength-1
 ```
 
-You will need to create the genome directory (`genomeDir`) prior to generating the genome index.
+You will need to create the genome directory (`genomeDir`) prior to generating the genome index. Ensure that `STAR` is in your `PATH` variable (as shown [above](#add-the-tool-to-the-path-variable)).
 
 An example of this process is as follows:
 
 ```bash
 #!/bin/bash
 
-genomeDir="path/to/genomeDir"
+genomeDir="{path_to_DB}/gencode/human"
 
-/home/{path}/STAR-2.7.10b/source/STAR \
-	--runThreadN 20 \
-	--genomeDir "${genomeDir}" \
-	--runMode genomeGenerate \
-	--genomeFastaFiles "${genomeDir}/GRCm39.genome.fa" \
-	--sjdbGTFfile "${genomeDir}/gencode.vM27.chr_patch_hapl_scaff.annotation.gtf" \
-	--sjdbOverhang 99
+STAR \
+  --runThreadN 20 \
+  --genomeDir "${genomeDir}" \
+  --runMode genomeGenerate \
+  --genomeFastaFiles "${genomeDir}/GRCh38.p13.genome.fa" \
+  --sjdbGTFfile "${genomeDir}/gencode.v42.chr_patch_hapl_scaff.annotation.gtf" \
+  --sjdbOverhang 99
 ```
 
 ## Downloading sequencing reads
