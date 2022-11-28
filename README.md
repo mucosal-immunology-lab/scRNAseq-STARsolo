@@ -10,6 +10,7 @@ Here we will describe the process of downloading publicly available scRNAseq dat
     - [Set up your SRA toolkit](#set-up-your-sra-toolkit)
     - [Retrieve the SRA files](#retrieve-the-sra-files)
     - [Convert the SRA accessions to FASTQ files](#convert-the-sra-accessions-to-fastq-files)
+    - [Troubleshooting](#troubleshooting)
 
 
 ## Downloading sequencing reads
@@ -75,7 +76,7 @@ The slurm submission script is as follows, and is named `submit_fasterq_dump.sh`
 #SBATCH --partition=genomics
 #SBATCH --qos=genomics
 
-fasterq-dump "path/to/raw_SRA_data/${1}/" --split-files \
+fasterq-dump $1 --split-files \
   --include-technical \
   --outdir ../raw_fastq \
   --verbose \
@@ -86,14 +87,14 @@ Finally, our bash script to loop through job submissions is as follows, as is na
 
 ```bash
 #!/bin/bash
-for SRA in `cat $1`; do
-  echo $SRA
-  sbatch submit_fasterq_dump.sh "${SRA}"
-  sleep 1
-done
+while read SRA; do
+  FILE="../raw_data/${SRA}/"
+  sbatch submit_fasterq_dump.sh "$FILE"
+  sleep 0.5
+done < $1
 ```
 
-Therefore, to run this set of (<= 32) `fasterq-dump` jobs, we run the command below. We can then continue with the others afterwards. It does take longer, and require user input to run each group of jobs, however
+Therefore, to run this set of (<= 32) `fasterq-dump` jobs, we run the command below. We can then continue with the others afterwards. It does take longer, and require user input to run each group of jobs, however it respects everyone else's ability to also use the genomics partition.
 
 ```bash
 bash convert_fastq.sh fq-dump-job-a
@@ -101,4 +102,20 @@ bash convert_fastq.sh fq-dump-job-a
 OR
 
 bash convert_fastq.sh full_accession_list.txt if <= 32 SRAs
+```
+
+### Troubleshooting
+
+If you get an error such as below, then it is likely you trimmed your SRA accession list from a text file that originated on a Windows system.
+
+```bash
+Preference setting is: Prefer SRA Normalized Format files with full base quality scores if available.
+2022-11-28T04:38:05 fasterq-dump.3.0.1 err: error unexpected while resolving query within virtual file system module - No accession to process ( 500 )
+Failed to call external services.
+```
+
+If you view your file via `cat -v filename`, and you see the `^M` new line marker at the ends, you can fix this using the following command to reset the new line markers.
+
+```bash
+sed -i -e "s/\r//g" filename
 ```
