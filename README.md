@@ -26,7 +26,7 @@ The first step of actually acquiring the sequencing runs is to `prefetch` the ac
 
 Something to note here:
 
-* The prefetch-tool downloads to a directory named by accession. E.g. `prefetch SRR000001` will create a directory named `SRR000001` in the current directory. Make sure that if you move the `SRR000001` directory, you don't rename it as the conversion-tool will need to find the original directory.
+* The `prefetch` tool downloads to a directory named by accession. E.g. `prefetch SRR000001` will create a directory named `SRR000001` in the current directory. Make sure that if you move the `SRR000001` directory, you don't rename it as the conversion-tool will need to find the original directory.
 
 To retrieve multiple SRA accessions, you should have a `.txt` file containing a single accession per line, and you can run the following `bash` command to download them to some parent directory (`path/to/raw_data`).
 
