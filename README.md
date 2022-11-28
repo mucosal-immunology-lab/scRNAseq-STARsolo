@@ -114,7 +114,7 @@ Preference setting is: Prefer SRA Normalized Format files with full base quality
 Failed to call external services.
 ```
 
-If you view your file via `cat -v filename`, and you see the `^M` new line marker at the ends, you can fix this using the following command to reset the new line markers.
+If you view your file via `cat -v filename`, and you see the `^M` new line marker at the ends, you can fix this using the following command to reset the new line markers for use with Unix systems.
 
 ```bash
 sed -i -e "s/\r//g" filename
