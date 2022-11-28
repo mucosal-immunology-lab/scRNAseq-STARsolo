@@ -93,7 +93,7 @@ for SRA in `cat $1`; do
 done
 ```
 
-Therefore, to run this set of 8 `fasterq-dump` jobs, we run the command below. We can then continue with the others afterwards. It does take longer, and require user input to run each group of jobs, however
+Therefore, to run this set of (<= 32) `fasterq-dump` jobs, we run the command below. We can then continue with the others afterwards. It does take longer, and require user input to run each group of jobs, however
 
 ```bash
 bash convert_fastq.sh fq-dump-job-a
