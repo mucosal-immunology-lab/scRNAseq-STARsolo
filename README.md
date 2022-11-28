@@ -166,7 +166,7 @@ fasterq-dump $1 --split-files \
   --progress
 ```
 
-Finally, our bash script to loop through job submissions is as follows, as is named `convert_fastq.sh`.
+Finally, our bash script to loop through job submissions is as follows, and is named `convert_fastq.sh`.
 
 ```bash
 #!/bin/bash
