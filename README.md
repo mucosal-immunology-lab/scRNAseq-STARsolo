@@ -6,12 +6,95 @@ Here we will describe the process of downloading publicly available scRNAseq dat
 
 - [Analysis of single-cell RNA sequencing data with STAR solo](#analysis-of-single-cell-rna-sequencing-data-with-star-solo)
   - [Table of contents](#table-of-contents)
+  - [Installation of STAR](#installation-of-star)
+    - [Download STAR](#download-star)
+    - [Download your genome](#download-your-genome)
+    - [Download scRNAseq whitespace files](#download-scrnaseq-whitespace-files)
+      - [BD Rhapsody whitespace files](#bd-rhapsody-whitespace-files)
+    - [Generate genome index files](#generate-genome-index-files)
   - [Downloading sequencing reads](#downloading-sequencing-reads)
     - [Set up your SRA toolkit](#set-up-your-sra-toolkit)
     - [Retrieve the SRA files](#retrieve-the-sra-files)
     - [Convert the SRA accessions to FASTQ files](#convert-the-sra-accessions-to-fastq-files)
     - [Troubleshooting](#troubleshooting)
+  - [Map reads to the genome](#map-reads-to-the-genome)
+    - [BD Rhapsody](#bd-rhapsody)
+    - [Drop-seq](#drop-seq)
 
+## Installation of STAR
+
+### Download STAR
+
+Download and compile the latest version of [STAR](https://github.com/alexdobin/STAR). 
+
+You can find the STAR manual [here](https://raw.githubusercontent.com/alexdobin/STAR/master/doc/STARmanual.pdf).
+
+### Download your genome
+
+Download the relevant species genome from GENCODE (recommended &ndash; [https://www.gencodegenes.org/](https://www.gencodegenes.org/)) or ENSEMBL (latest release &ndash; [http://ftp.ensembl.org/pub/release-108/](http://ftp.ensembl.org/pub/release-108/)).
+
+You need to download both the GTF file and FASTA (DNA) file for your species. The most comprehensive annotations for your species is highly recommended.
+
+An example using the human GRCh38.p13 GENCODE release 42:
+
+```bash
+# Download the GTF file
+wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_42/gencode.v42.chr_patch_hapl_scaff.annotation.gtf.gz
+
+# Download the FASTA file
+wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_42/GRCh38.p13.genome.fa.gz
+```
+
+### Download scRNAseq whitespace files
+
+For many scRNAseq systems, you are required to obtain whitespace files. For Drop-seq, this is not required, but an example of the process for the BD Rhapsody is explained below.
+
+#### BD Rhapsody whitespace files
+
+The structure of the BD Rhapsody is explained [here](https://teichlab.github.io/scg_lib_structs/methods_html/BD_Rhapsody.html).
+
+STARsolo requires all 3 BD Rhapsody whitespace files.
+
+```bash
+# Navigate to a database folder - perhaps on the project drive
+cd path/to/db
+wget https://teichlab.github.io/scg_lib_structs/data/BD_CLS1.txt
+wget https://teichlab.github.io/scg_lib_structs/data/BD_CLS2.txt
+wget https://teichlab.github.io/scg_lib_structs/data/BD_CLS3.txt
+```
+
+### Generate genome index files
+
+This process is explained in greater detail in the [STAR manual](https://raw.githubusercontent.com/alexdobin/STAR/master/doc/STARmanual.pdf).
+
+The basic options to generate your genome index are as follows:
+
+```bash
+--runThreadN NumberOfThreads
+--runMode genomeGenerate
+--genomeDir /path/to/genomeDir
+--genomeFastaFiles /path/to/genome/fasta1 /path/to/genome/fasta2 ...
+--sjdbGTFfile /path/to/annotations.gtf
+--sjdbOverhang ReadLength-1
+```
+
+You will need to create the genome directory (`genomeDir`) prior to generating the genome index.
+
+An example of this process is as follows:
+
+```bash
+#!/bin/bash
+
+genomeDir="path/to/genomeDir"
+
+/home/{path}/STAR-2.7.10b/source/STAR \
+	--runThreadN 20 \
+	--genomeDir "${genomeDir}" \
+	--runMode genomeGenerate \
+	--genomeFastaFiles "${genomeDir}/GRCm39.genome.fa" \
+	--sjdbGTFfile "${genomeDir}/gencode.vM27.chr_patch_hapl_scaff.annotation.gtf" \
+	--sjdbOverhang 99
+```
 
 ## Downloading sequencing reads
 
@@ -118,4 +201,59 @@ If you view your file via `cat -v filename`, and you see the `^M` new line marke
 
 ```bash
 sed -i -e "s/\r//g" filename
+```
+
+## Map reads to the genome
+
+This process will be slightly different depending on the scRNAseq system you used, but a couple of example scripts are given below.
+
+### BD Rhapsody
+
+`STARsolo_map_BDRhapsody.sh`
+
+```bash
+#!/bin/bash
+
+genomeDir="/path/to/genomeDir"
+seqDir="/path/to/sequencing/files"
+
+/home/{path}/STAR-2.7.10b/source/STAR \
+        --outFileNamePrefix "${seqDir}/sample1" \
+        --genomeDir "${genomeDir}/STARgenomeIndex" \
+        --runThreadN 20 \
+        --readFilesIn "${seqDir}/data/sample1_R2.fastq.gz" "${seqDir}/data/sample1_R1.fastq.gz" \
+        --readFilesCommand zcat \
+        --sjdbGTFfile "${genomeDir}/db/gencode.vM27.chr_patch_hapl_scaff.annotation.gtf" \
+        --soloType CB_UMI_Complex \
+        --soloCBmatchWLtype 1MM \
+        --soloCBwhitelist "${genomeDir}/BD_CLS1.txt" "${genomeDir}/BD_CLS2.txt" "${genomeDir}/BD_CLS3.txt" \
+        --soloUMIlen 8 \
+        --soloCBposition 0_0_0_8 0_21_0_29 0_43_0_51 \
+        --soloUMIposition 0_52_0_59 \
+        --soloCellFilter EmptyDrops_CR 3000 0.99 10 45000 90000 500 0.01 20000 0.01 10000
+```
+
+### Drop-seq
+
+`STARsolo_map_dropSeq.sh`
+
+```bash
+#!/bin/bash
+
+genomeDir="/path/to/genomeDir"
+seqDir="/path/to/sequencing/files"
+
+/home/{path}/STAR-2.7.10b/source/STAR \
+        --outFileNamePrefix "..." \
+        --genomeDir "${genomeDir}/STARgenomeIndex" \
+        --runThreadN 19 \
+        --readFilesIn "${seqDir}/sample1_R2_001.fastq.gz" "${seqDir}/sample1_R1_001.fastq.gz" \
+        --readFilesCommand zcat \
+        --sjdbGTFfile "${genomeDir}/db/gencode.vM27.chr_patch_hapl_scaff.annotation.gtf" \
+        --soloType Droplet
+        --soloCBwhitelist none  \
+        --soloCBstart 1 \
+        --soloCBlen 12\
+        --soloUMIstart 13 \
+        --soloUMIlen 8
 ```
