@@ -118,9 +118,9 @@ The basic options to generate your genome index are as follows:
 --sjdbOverhang ReadLength-1
 ```
 
-You will need to create the genome directory (`genomeDir`) prior to generating the genome index. Ensure that `STAR` is in your `PATH` variable (as shown [above](#add-the-tool-to-the-path-variable)).
+You will need to create the genome directory (`genomeDir`) prior to generating the genome index. Ensure that `STAR` is in your `PATH` variable (as shown [above](#add-the-tool-to-the-path-variable)), and that you have sufficient CPUs available (otherwise edit script accordingly).
 
-An example of this process is as follows:
+An example of this process (for the human genome) is as follows (`human_genome_index.sh`):
 
 ```bash
 #!/bin/bash
@@ -245,7 +245,7 @@ sed -i -e "s/\r//g" filename
 
 ## Map reads to the genome
 
-This process will be slightly different depending on the scRNAseq system you used, but a couple of example scripts are given below.
+This process will be slightly different depending on the scRNAseq system you used, but a couple of example scripts are given below. Ensure that `STAR` is in your `PATH` variable (as shown [above](#add-the-tool-to-the-path-variable)).
 
 ### BD Rhapsody
 
@@ -257,20 +257,20 @@ This process will be slightly different depending on the scRNAseq system you use
 genomeDir="/path/to/genomeDir"
 seqDir="/path/to/sequencing/files"
 
-/home/{path}/STAR-2.7.10b/source/STAR \
-        --outFileNamePrefix "${seqDir}/sample1" \
-        --genomeDir "${genomeDir}/STARgenomeIndex" \
-        --runThreadN 20 \
-        --readFilesIn "${seqDir}/data/sample1_R2.fastq.gz" "${seqDir}/data/sample1_R1.fastq.gz" \
-        --readFilesCommand zcat \
-        --sjdbGTFfile "${genomeDir}/db/gencode.vM27.chr_patch_hapl_scaff.annotation.gtf" \
-        --soloType CB_UMI_Complex \
-        --soloCBmatchWLtype 1MM \
-        --soloCBwhitelist "${genomeDir}/BD_CLS1.txt" "${genomeDir}/BD_CLS2.txt" "${genomeDir}/BD_CLS3.txt" \
-        --soloUMIlen 8 \
-        --soloCBposition 0_0_0_8 0_21_0_29 0_43_0_51 \
-        --soloUMIposition 0_52_0_59 \
-        --soloCellFilter EmptyDrops_CR 3000 0.99 10 45000 90000 500 0.01 20000 0.01 10000
+STAR \
+  --outFileNamePrefix "${seqDir}/sample1" \
+  --genomeDir "${genomeDir}/STARgenomeIndex" \
+  --runThreadN 20 \
+  --readFilesIn "${seqDir}/data/sample1_R2.fastq.gz" "${seqDir}/data/sample1_R1.fastq.gz" \
+  --readFilesCommand zcat \
+  --sjdbGTFfile "${genomeDir}/db/gencode.vM27.chr_patch_hapl_scaff.annotation.gtf" \
+  --soloType CB_UMI_Complex \
+  --soloCBmatchWLtype 1MM \
+  --soloCBwhitelist "${genomeDir}/BD_CLS1.txt" "${genomeDir}/BD_CLS2.txt" "${genomeDir}/BD_CLS3.txt" \
+  --soloUMIlen 8 \
+  --soloCBposition 0_0_0_8 0_21_0_29 0_43_0_51 \
+  --soloUMIposition 0_52_0_59 \
+  --soloCellFilter EmptyDrops_CR 3000 0.99 10 45000 90000 500 0.01 20000 0.01 10000
 ```
 
 ### Drop-seq
@@ -283,17 +283,17 @@ seqDir="/path/to/sequencing/files"
 genomeDir="/path/to/genomeDir"
 seqDir="/path/to/sequencing/files"
 
-/home/{path}/STAR-2.7.10b/source/STAR \
-        --outFileNamePrefix "..." \
-        --genomeDir "${genomeDir}/STARgenomeIndex" \
-        --runThreadN 19 \
-        --readFilesIn "${seqDir}/sample1_R2_001.fastq.gz" "${seqDir}/sample1_R1_001.fastq.gz" \
-        --readFilesCommand zcat \
-        --sjdbGTFfile "${genomeDir}/db/gencode.vM27.chr_patch_hapl_scaff.annotation.gtf" \
-        --soloType Droplet
-        --soloCBwhitelist none  \
-        --soloCBstart 1 \
-        --soloCBlen 12\
-        --soloUMIstart 13 \
-        --soloUMIlen 8
+STAR \
+  --outFileNamePrefix "..." \
+  --genomeDir "${genomeDir}/STARgenomeIndex" \
+  --runThreadN 19 \
+  --readFilesIn "${seqDir}/sample1_R2_001.fastq.gz" "${seqDir}/sample1_R1_001.fastq.gz" \
+  --readFilesCommand zcat \
+  --sjdbGTFfile "${genomeDir}/db/gencode.vM27.chr_patch_hapl_scaff.annotation.gtf" \
+  --soloType Droplet
+  --soloCBwhitelist none  \
+  --soloCBstart 1 \
+  --soloCBlen 12\
+  --soloUMIstart 13 \
+  --soloUMIlen 8
 ```
