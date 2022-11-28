@@ -37,3 +37,68 @@ prefetch --progress --output-directory path/to/raw_data --option-file SRA_access
 As described above, you will now have a number of folders inside the parent output folder you designated; one folder for each SRA.
 
 ### Convert the SRA accessions to FASTQ files
+
+First we need to create two bash scripts: 1) a slurm submission script that will submit a single job, and 2) a bash script that loops through job submissions.
+
+Because of the limitations on job submission for the genomics cluster, we will first need to split the SRA accession list into groups of 32. This will limit usage to the maximum of 4 nodes that a user can occupy at any one time. I.e. 6GB x 6 CPUs = 36GB RAM &rarr; 36GB x 8 = 288GB and 6 CPUS x 8 = 48 CPUs &rarr; Each genomics node has 334GB RAM and 48 CPUs. Therefore we can run 8 jobs per node, and 4 x 8 = 32 jobs maximum.
+
+This can be done manually, or via the following code. It will create a number of files with a suffix in alphabetical order. Of course if you have less than this number of jobs, you can skip this step.
+
+```bash
+split -l 32 full_accession_list.txt fasterq-dump- -a 1 --additional-suffix .txt
+```
+
+An example of the split file would be (with filename `fq-dump-job-a`):
+
+```bash
+SRR8284756
+SRR8284757
+SRR8284758
+SRR8284759
+SRR8284760
+SRR8284761
+SRR8284762
+SRR8284763
+... etc.
+```
+
+The slurm submission script is as follows, and is named `submit_fasterq_dump.sh`.
+
+```bash
+#!/bin/bash
+#SBATCH --job-name=fasterq-dump
+#SBATCH --account=mf33
+#SBATCH --time=4:00:00
+#SBATCH --mem-per-cpu=6G
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=6
+#SBATCH --partition=genomics
+#SBATCH --qos=genomics
+
+fasterq-dump "path/to/raw_SRA_data/${1}/" --split-files \
+  --include-technical \
+  --outdir ../raw_fastq \
+  --verbose \
+  --progress
+```
+
+Finally, our bash script to loop through job submissions is as follows, as is named `convert_fastq.sh`.
+
+```bash
+#!/bin/bash
+for SRA in `cat $1`; do
+  echo $SRA
+  sbatch submit_fasterq_dump.sh "${SRA}"
+  sleep 1
+done
+```
+
+Therefore, to run this set of 8 `fasterq-dump` jobs, we run the command below. We can then continue with the others afterwards. It does take longer, and require user input to run each group of jobs, however
+
+```bash
+bash convert_fastq.sh fq-dump-job-a
+
+OR
+
+bash convert_fastq.sh full_accession_list.txt if <= 32 SRAs
+```
