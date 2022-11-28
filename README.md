@@ -254,16 +254,16 @@ This process will be slightly different depending on the scRNAseq system you use
 ```bash
 #!/bin/bash
 
-genomeDir="/path/to/genomeDir"
+genomeDir="{path_to_DB}/gencode/human"
 seqDir="/path/to/sequencing/files"
 
 STAR \
   --outFileNamePrefix "${seqDir}/sample1" \
-  --genomeDir "${genomeDir}/STARgenomeIndex" \
+  --genomeDir "${genomeDir}" \
   --runThreadN 20 \
   --readFilesIn "${seqDir}/data/sample1_R2.fastq.gz" "${seqDir}/data/sample1_R1.fastq.gz" \
   --readFilesCommand zcat \
-  --sjdbGTFfile "${genomeDir}/db/gencode.vM27.chr_patch_hapl_scaff.annotation.gtf" \
+  --sjdbGTFfile "${genomeDir}/gencode.v42.chr_patch_hapl_scaff.annotation.gtf" \
   --soloType CB_UMI_Complex \
   --soloCBmatchWLtype 1MM \
   --soloCBwhitelist "${genomeDir}/BD_CLS1.txt" "${genomeDir}/BD_CLS2.txt" "${genomeDir}/BD_CLS3.txt" \
@@ -280,16 +280,16 @@ STAR \
 ```bash
 #!/bin/bash
 
-genomeDir="/path/to/genomeDir"
+genomeDir="{path_to_DB}/gencode/human"
 seqDir="/path/to/sequencing/files"
 
 STAR \
   --outFileNamePrefix "..." \
-  --genomeDir "${genomeDir}/STARgenomeIndex" \
+  --genomeDir "${genomeDir}" \
   --runThreadN 19 \
   --readFilesIn "${seqDir}/sample1_R2_001.fastq.gz" "${seqDir}/sample1_R1_001.fastq.gz" \
   --readFilesCommand zcat \
-  --sjdbGTFfile "${genomeDir}/db/gencode.vM27.chr_patch_hapl_scaff.annotation.gtf" \
+  --sjdbGTFfile "${genomeDir}/gencode.v42.chr_patch_hapl_scaff.annotation.gtf" \
   --soloType Droplet
   --soloCBwhitelist none  \
   --soloCBstart 1 \
