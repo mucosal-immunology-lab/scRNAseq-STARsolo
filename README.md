@@ -15,7 +15,7 @@ Here we will describe the process of downloading publicly available scRNAseq dat
     - [Download scRNAseq whitespace files](#download-scrnaseq-whitespace-files)
       - [BD Rhapsody whitespace files](#bd-rhapsody-whitespace-files)
     - [Generate genome index files](#generate-genome-index-files)
-  - [Downloading sequencing reads](#downloading-sequencing-reads)
+  - [Downloading sequencing reads (publicly available)](#downloading-sequencing-reads-publicly-available)
     - [Set up your SRA toolkit](#set-up-your-sra-toolkit)
     - [Retrieve the SRA files](#retrieve-the-sra-files)
     - [Convert the SRA accessions to FASTQ files](#convert-the-sra-accessions-to-fastq-files)
@@ -136,7 +136,7 @@ STAR \
   --sjdbOverhang 99
 ```
 
-## Downloading sequencing reads
+## Downloading sequencing reads (publicly available)
 
 ### Set up your SRA toolkit
 
@@ -164,7 +164,7 @@ As described above, you will now have a number of folders inside the parent outp
 
 First we need to create two bash scripts: 1) a slurm submission script that will submit a single job, and 2) a bash script that loops through job submissions.
 
-Because of the limitations on job submission for the genomics cluster, we will first need to split the SRA accession list into groups of 32. This will limit usage to the maximum of 4 nodes that a user can occupy at any one time. I.e. 6GB x 6 CPUs = 36GB RAM &rarr; 36GB x 8 = 288GB and 6 CPUS x 8 = 48 CPUs &rarr; Each genomics node has 334GB RAM and 48 CPUs. Therefore we can run 8 jobs per node, and 4 x 8 = 32 jobs maximum.
+Because of the limitations on job submission for the genomics cluster, we will first need to split the SRA accession list into groups of 32. This will limit usage to the maximum of 4 nodes that a user can occupy at any one time. I.e. 6GB x 6 CPUs = 36GB RAM &rarr; 36GB x 8 = 288GB and 6 CPUs x 8 = 48 CPUs &rarr; Each genomics node has 334GB RAM and 48 CPUs. Therefore we can run 8 jobs per node, and 4 x 8 = 32 jobs maximum.
 
 This can be done manually, or via the following code. It will create a number of files with a suffix in alphabetical order. Of course if you have less than this number of jobs, you can skip this step.
 
